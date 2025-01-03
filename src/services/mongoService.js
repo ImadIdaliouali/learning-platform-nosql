@@ -14,7 +14,7 @@ async function findOneById(collection, id) {
   return document;
 }
 
-async function findMany(collection, query) {
+async function findMany(collection, query = {}) {
   // TODO: Implémenter une fonction générique de recherche multiple
   const documents = await db
     .getMongoDb()
@@ -35,7 +35,7 @@ async function updateOne(collection, id, data) {
   const document = await db
     .getMongoDb()
     .collection(collection)
-    .updateOne({ _id: new ObjectId(id) }, { $set: data });
+    .updateOne({ _id: new ObjectId(id) }, data);
   return document;
 }
 
@@ -48,6 +48,16 @@ async function deleteOne(collection, id) {
   return document;
 }
 
+async function aggregate(collection, pipeline) {
+  // TODO: Implémenter une fonction générique d'agrégation
+  const documents = await db
+    .getMongoDb()
+    .collection(collection)
+    .aggregate(pipeline)
+    .toArray();
+  return documents;
+}
+
 // Export des services
 module.exports = {
   // TODO: Exporter les fonctions utilitaires
@@ -56,4 +66,5 @@ module.exports = {
   insertOne,
   updateOne,
   deleteOne,
+  aggregate,
 };
