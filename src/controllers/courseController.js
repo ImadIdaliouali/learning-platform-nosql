@@ -24,10 +24,15 @@ async function getAllCourses(req, res) {
   // TODO: Implémenter la récupération de tous les cours
   // Utiliser les services pour la logique réutilisable
   try {
+    const cachedCourses = await redisService.getCachedData("courses");
+    if (cachedCourses) {
+      return res.json(cachedCourses);
+    }
     const courses = await mongoService.findMany("courses");
     if (!courses) {
       return res.status(404).json({ error: "Courses not found" });
     }
+    await redisService.cacheData("courses", courses, 60); // Cache for 1 minute
     res.json(courses);
   } catch (error) {
     console.error("Error getting all courses:", error);
@@ -47,6 +52,7 @@ async function createCourse(req, res) {
     if (!insertedCourse) {
       return res.status(400).json({ error: "Failed to create course" });
     }
+    await redisService.deleteCachedData("courses");
     res.status(201).json({ _id: insertedCourse.insertedId, ...course });
   } catch (error) {
     console.error("Error creating course:", error);
@@ -90,6 +96,7 @@ async function updateCourse(req, res) {
     if (!updatedCourse) {
       return res.status(400).json({ error: "Failed to update course" });
     }
+    await redisService.deleteCachedData("courses");
     res.json({ _id: courseId, ...course });
   } catch (error) {
     console.error("Error updating course:", error);
@@ -109,6 +116,7 @@ async function deleteCourse(req, res) {
     if (!deletedCourse) {
       return res.status(400).json({ error: "Failed to delete course" });
     }
+    await redisService.deleteCachedData("courses");
     res.json({ _id: courseId });
   } catch (error) {
     console.error("Error deleting course:", error);
@@ -120,6 +128,7 @@ async function getCourseStats(req, res) {
   // TODO: Implémenter la récupération des statistiques des cours
   // Utiliser les services pour la logique réutilisable
   try {
+    // Aggregate pipeline to get course stats
     const pipeline = [
       {
         $group: {

@@ -33,8 +33,19 @@ async function getCachedData(key) {
   }
 }
 
+async function deleteCachedData(key) {
+  try {
+    const client = db.getRedisClient();
+    await client.del(key);
+    console.log(`Data deleted from cache with key: ${key}`);
+  } catch (error) {
+    console.error("Error deleting cached data:", error);
+  }
+}
+
 module.exports = {
   // TODO: Exporter les fonctions utilitaires
   cacheData,
   getCachedData,
+  deleteCachedData,
 };

@@ -25,10 +25,15 @@ const redisService = require("../services/redisService");
 
 async function getAllStudents(req, res) {
   try {
+    const cachedStudents = await redisService.getCachedData("students");
+    if (cachedStudents) {
+      return res.json(cachedStudents);
+    }
     const students = await mongoService.findMany("students");
     if (!students) {
       return res.status(404).json({ error: "Students not found" });
     }
+    await redisService.cacheData("students", students, 60); // Cache for 1 minute
     res.json(students);
   } catch (error) {
     console.error("Failed to get students:", error);
@@ -46,6 +51,7 @@ async function createStudent(req, res) {
     if (!insertedStudent) {
       return res.status(400).json({ error: "Failed to create student" });
     }
+    await redisService.deleteCachedData("students");
     res.status(201).json({ _id: insertedStudent.insertedId, ...student });
   } catch (error) {
     console.error("Failed to create student:", error);
@@ -85,6 +91,7 @@ async function updateStudent(req, res) {
     if (!updatedStudent) {
       return res.status(404).json({ error: "Student not found" });
     }
+    await redisService.deleteCachedData("students");
     res.json({ _id: studentId, ...student });
   } catch (error) {
     console.error("Failed to update student:", error);
@@ -102,6 +109,7 @@ async function deleteStudent(req, res) {
     if (!deletedStudent) {
       return res.status(404).json({ error: "Student not found" });
     }
+    await redisService.deleteCachedData("students");
     res.json({ _id: studentId });
   } catch (error) {
     console.error("Failed to delete student:", error);
@@ -154,6 +162,7 @@ async function enrollCourse(req, res) {
     if (!updatedCourse) {
       return res.status(404).json({ error: "Course not found" });
     }
+    await redisService.deleteCachedData("students");
     res.json(enrollment);
   } catch (error) {
     console.error("Failed to enroll course:", error);
