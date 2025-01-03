@@ -5,7 +5,7 @@ const express = require("express");
 const config = require("./config/env");
 const db = require("./config/db");
 
-// const courseRoutes = require("./routes/courseRoutes");
+const courseRoutes = require("./routes/courseRoutes");
 // const studentRoutes = require("./routes/studentRoutes");
 
 const app = express();
@@ -21,9 +21,7 @@ async function startServer() {
 
     app.use(express.json());
 
-    app.get("/", (req, res) => {
-      res.send("Hello World!");
-    });
+    app.use("/courses", courseRoutes);
 
     app.listen(config.port, () => {
       console.log(`Server is running on http://localhost:${config.port}`);
@@ -35,7 +33,7 @@ async function startServer() {
 }
 
 // Gestion propre de l'arrêt
-process.on("SIGTERM", async () => {
+process.on("SIGINT", async () => {
   // TODO: Implémenter la fermeture propre des connexions
   await db.closeMongo();
   await db.closeRedis();
