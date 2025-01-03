@@ -13,6 +13,9 @@ async function getAllCourses(req, res) {
   // Utiliser les services pour la logique réutilisable
   try {
     const courses = await mongoService.findMany("courses", {});
+    if (!courses) {
+      return res.status(404).json({ error: "Courses not found" });
+    }
     res.json(courses);
   } catch (error) {
     console.error("Error getting all courses:", error);

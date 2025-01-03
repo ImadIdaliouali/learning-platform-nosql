@@ -3,11 +3,38 @@
 // Question: Quelles sont les bonnes pratiques pour les clés Redis ?
 // Réponse :
 
+const db = require("../config/db");
+
 // Fonctions utilitaires pour Redis
 async function cacheData(key, data, ttl) {
-    // TODO: Implémenter une fonction générique de cache
+  // TODO: Implémenter une fonction générique de cache
+  try {
+    const client = db.getRedisClient();
+    await client.set(key, JSON.stringify(data));
+    await client.expire(key, ttl);
+    console.log(`Data cached with key: ${key}`);
+  } catch (error) {
+    console.error("Error caching data:", error);
   }
-  
-  module.exports = {
-    // TODO: Exporter les fonctions utilitaires
-  };
+}
+
+async function getCachedData(key) {
+  // TODO: Implémenter une fonction générique pour récupérer les données mises en cache
+  try {
+    const client = db.getRedisClient();
+    const cachedData = await client.get(key);
+    if (!cachedData) {
+      return null;
+    }
+    console.log(`Data retrieved from cache with key: ${key}`);
+    return JSON.parse(cachedData);
+  } catch (error) {
+    console.error("Error getting cached data:", error);
+  }
+}
+
+module.exports = {
+  // TODO: Exporter les fonctions utilitaires
+  cacheData,
+  getCachedData,
+};

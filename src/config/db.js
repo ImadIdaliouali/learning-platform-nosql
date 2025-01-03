@@ -26,9 +26,9 @@ async function connectRedis() {
   // TODO: Implémenter la connexion Redis
   // Gérer les erreurs et les retries
   try {
-    redisClient = redis.createClient(config.redis.uri);
-    redisClient.on("error", (err) => console.error(err));
-    console.log("Connected to Redis");
+    redisClient = redis.createClient({ url: config.redis.uri });
+    redisClient.on("connect", () => console.log("Connected to Redis"));
+    await redisClient.connect();
   } catch (err) {
     console.error("Error connecting to Redis:", err);
   }
@@ -37,8 +37,10 @@ async function connectRedis() {
 async function closeMongo() {
   // TODO: Implémenter la fermeture de la connexion MongoDB
   try {
-    await mongoClient.close();
-    console.log("MongoDB connection closed");
+    if (mongoClient) {
+      await mongoClient.close();
+      console.log("MongoDB connection closed");
+    }
   } catch (err) {
     console.error("Error closing MongoDB connection:", err);
   }
@@ -47,8 +49,10 @@ async function closeMongo() {
 async function closeRedis() {
   // TODO: Implémenter la fermeture de la connexion Redis
   try {
-    redisClient.quit();
-    console.log("Redis connection closed");
+    if (redisClient) {
+      redisClient.quit();
+      console.log("Redis connection closed");
+    }
   } catch (err) {
     console.error("Error closing Redis connection:", err);
   }
